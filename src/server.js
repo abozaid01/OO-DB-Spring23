@@ -30,28 +30,35 @@ app.get("/", (req, res) => {
     res.status(200).json({ status: "success", message: "Hello world! " });
 });
 
-app.get("/customers:id", async (req, res) => {
+//GET all the customers data based on a minimum order count
+app.get("/customers", async (req, res) => {
+    const minOrders = req.query.min_order || 0;
     try {
         const conn = await db.connect();
-        const sql = `SELECT * FROM "customer"`;
-        const result = await conn.query(sql);
-        conn.release();
-
+        const query = {
+            text: `SELECT c.customer_id, c.first_name, c.last_name, COUNT(o.order_id) AS order_count
+            FROM customer AS c
+            JOIN "order" AS o ON c.customer_id = o.customer_id
+            GROUP BY c.customer_id, c.first_name, c.last_name
+            HAVING COUNT(o.order_id) >= $1`,
+            values: [minOrders],
+        };
+        const result = await conn.query(query);
         res.json({
             status: "success",
             results: result.rows.length,
             message: "customers retrived ",
             data: result.rows,
         });
-    } catch (error) {
-        res.json({
+    } catch (err) {
+        res.status(500).json({
             status: "failed",
-            msg: `unable to get customers: ${error.message}`,
+            msg: `Error retrieving min orders: ${err.message}`,
         });
     }
 });
 
-app.get("/customers/recent-orders:days?", async (req, res) => {
+app.get("/customers/recent-orders", async (req, res) => {
     const days = req.query.days || 30;
     try {
         const conn = await db.connect();

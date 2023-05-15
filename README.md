@@ -19,3 +19,4 @@ npm run start
 #### Users
 
 -   [GET] customers/recent-orders?days/
+-   [GET] customers?min_order/
