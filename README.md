@@ -16,7 +16,11 @@ npm run start
 
 ## All the endpoints
 
-#### Users
+#### Customers
 
 -   [GET] customers/recent-orders?days/
 -   [GET] customers?min_order/
+
+#### Products
+
+-   [GET] products?top/

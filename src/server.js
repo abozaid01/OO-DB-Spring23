@@ -91,6 +91,35 @@ app.get("/customers/recent-orders", async (req, res) => {
     }
 });
 
+//GET top [n] best-selling products by revenue
+app.get("/products", async (req, res) => {
+    try {
+        const top = req.query.top;
+        const conn = await db.connect();
+        const query = `SELECT P.product_id, P.description, SUM(OI.quantity * P.price) AS revenue
+        FROM product P
+        JOIN order_item OI ON P.product_id = OI.product_id
+        GROUP BY P.product_id, P.description
+        ORDER BY revenue DESC
+        LIMIT $1;
+    `;
+
+        const result = await conn.query(query, [top]);
+        res.json({
+            status: "success",
+            results: result.rows.length,
+            message: "products retrived ",
+            data: result.rows,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            status: "failed",
+            msg: `Error retrieving recent products: ${err.message}`,
+        });
+    }
+});
+
 //NOT FOUND ROUTES
 app.use((_req, res) => {
     res.status(404).json({
