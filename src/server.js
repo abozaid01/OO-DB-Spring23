@@ -77,6 +77,7 @@ app.get("/customers/recent-orders", async (req, res) => {
 app.get("/products", async (req, res) => {
     try {
         const top = req.query.top;
+        console.log(top);
         const conn = await db.connect();
         const query = `SELECT P.product_id, P.description, SUM(OI.quantity * P.price) AS revenue
         FROM product P
@@ -126,6 +127,34 @@ app.get("/category/total-sales", async (req, res) => {
         res.status(500).json({
             status: "failed",
             msg: `Error retrieving totals-sales categories: ${err.message}`,
+        });
+    }
+});
+
+//GET top categories based on quantity
+app.get("/category/total-sales-quantity", async (req, res) => {
+    try {
+        const conn = await db.connect();
+        const query = `SELECT c.name, COUNT(*) as total_sales
+                        FROM order_item as oi, product as p, category as c
+                        WHERE oi.product_id = p.product_id and c.category_id = p.category_id
+                        GROUP BY p.category_id, c.name
+                        ORDER BY total_sales DESC`;
+
+        const result = await conn.query(query);
+        conn.release();
+
+        res.json({
+            status: "success",
+            results: result.rows.length,
+            message: "categories retrived ",
+            data: result.rows,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            status: "failed",
+            msg: `Error retrieving totals-sales categories based on quantity: ${err.message}`,
         });
     }
 });

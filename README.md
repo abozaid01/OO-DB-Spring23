@@ -28,3 +28,4 @@ npm run start
 #### Categories
 
 -   [GET] /category/total-sales/
+-   [GET] /category/total-sales-quantity/
