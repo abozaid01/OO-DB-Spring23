@@ -24,3 +24,7 @@ npm run start
 #### Products
 
 -   [GET] products?top/
+
+#### Categories
+
+-   [GET] /category/total-sales/

@@ -14,4 +14,22 @@ pool.on("error", (error) => {
     console.log(error.message);
 });
 
+//test database connection
+pool.connect()
+    .then((client) => {
+        return client
+            .query("SELECT NOW()")
+            .then((res) => {
+                client.release();
+                console.log(res.rows);
+            })
+            .catch((err) => {
+                client.release();
+                console.log(err.stack);
+            });
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+
 module.exports = pool;

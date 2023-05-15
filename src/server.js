@@ -11,24 +11,6 @@ app.use(
     })
 );
 
-//test database connection
-db.connect()
-    .then((client) => {
-        return client
-            .query("SELECT NOW()")
-            .then((res) => {
-                client.release();
-                console.log(res.rows);
-            })
-            .catch((err) => {
-                client.release();
-                console.log(err.stack);
-            });
-    })
-    .catch((err) => {
-        console.log(err);
-    });
-
 //Routes
 app.get("/", (req, res) => {
     res.status(200).json({ status: "success", message: "Hello world! " });
@@ -116,6 +98,34 @@ app.get("/products", async (req, res) => {
         res.status(500).json({
             status: "failed",
             msg: `Error retrieving recent products: ${err.message}`,
+        });
+    }
+});
+
+//GET top categories based on total sales
+app.get("/category/total-sales", async (req, res) => {
+    try {
+        const conn = await db.connect();
+        const query = `SELECT c.name, COUNT(*) as total_sales
+                        FROM order_item as oi, product as p, category as c
+                        WHERE oi.product_id = p.product_id and c.category_id = p.category_id
+                        GROUP BY p.product_id, c.name
+                        ORDER BY total_sales desc`;
+
+        const result = await conn.query(query);
+        conn.release();
+
+        res.json({
+            status: "success",
+            results: result.rows.length,
+            message: "categories retrived ",
+            data: result.rows,
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            status: "failed",
+            msg: `Error retrieving totals-sales categories: ${err.message}`,
         });
     }
 });
