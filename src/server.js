@@ -5,7 +5,11 @@ const cors = require("cors");
 const app = express();
 
 //Middlewares
-app.use(cors());
+app.use(
+    cors({
+        origin: "*",
+    })
+);
 
 //test database connection
 db.connect()
@@ -37,10 +41,11 @@ app.get("/customers", async (req, res) => {
         const conn = await db.connect();
         const query = {
             text: `SELECT c.customer_id, c.first_name, c.last_name, COUNT(o.order_id) AS order_count
-            FROM customer AS c
-            JOIN "order" AS o ON c.customer_id = o.customer_id
+            FROM customer AS c 
+            JOIN "order" AS o 
+            ON c.customer_id = o.customer_id
             GROUP BY c.customer_id, c.first_name, c.last_name
-            HAVING COUNT(o.order_id) >= $1`,
+            having count (o.order_id) > $1`,
             values: [minOrders],
         };
         const result = await conn.query(query);
